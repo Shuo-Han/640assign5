@@ -201,6 +201,9 @@ class SWPReceiver:
     def insert_chunk(self, node):
         cur = SWPReceiver.buffer_head
         while(cur is not None):
+            logging.debug(cur)
+        cur = SWPReceiver.buffer_head
+        while(cur is not None):
             if(node.head  < cur.tail \
                 or (cur.next is not None and cur.next.head < node.tail)):
                 return
