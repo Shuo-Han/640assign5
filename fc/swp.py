@@ -201,7 +201,7 @@ class SWPReceiver:
     def insert_chunk(self, node):
         cur = SWPReceiver.buffer_head
         while(cur is not None):
-            print(cur.data)
+            print(str(cur.data) + "," +str(cur.head)+","+cur.tail)
             cur = cur.next
         cur = SWPReceiver.buffer_head
         while(cur is not None):
