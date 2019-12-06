@@ -81,14 +81,13 @@ class SWPSender:
         SWPSender.semaphore.acquire()
         seq_num = SWPSender._LWS
         SWPSender._LWS = SWPSender._LWS + l
-        seq_tail = seq_num + l
-
+        seq_tail = SWPSender._LWS
         SWPSender.buff[seq_tail] = data
         packet = SWPPacket(SWPType.DATA, seq_num, data)
         packet_byte = packet.to_bytes()
         self._llp_endpoint.send(packet_byte)
-        logging.debug("seq_num: %d" % seq_num)
-        logging.debug("seq_tail: %d" % seq_tail)
+        logging.debug("seq_num is: %d" % seq_num)
+        logging.debug("seq_tail is: %d" % seq_tail)
         self.timers[seq_tail]\
             = threading.Timer(SWPSender._TIMEOUT, self._retransmit, [seq_tail])
         self.timers[seq_tail].start()
@@ -123,6 +122,11 @@ class SWPSender:
 
 class SWPReceiver:
     _RECV_WINDOW_SIZE = 5
+    _ACKD = 0
+    _BUFF_SIZE = _RECV_WINDOW_SIZE * SWPPacket.MAX_DATA_SIZE
+    _BUFF_POINTER = 0
+    buff = [None for _ in range(_BUFF_SIZE)]
+    semaphore = threading.Semaphore(_RECV_WINDOW_SIZE)
 
     def __init__(self, local_address, loss_probability=0):
         self._llp_endpoint = llp.LLPEndpoint(local_address=local_address,
@@ -144,10 +148,39 @@ class SWPReceiver:
     def _recv(self):
         while True:
             # Receive data packet
+            SWPReceiver.semaphore.acquire()
             raw = self._llp_endpoint.recv()
             packet = SWPPacket.from_bytes(raw)
             logging.debug("Received: %s" % packet)
 
             # TODO
+            if(packet._seq_num + len(packet._data) <= SWPReceiver._ACKD):
+                packet = SWPPacket(SWPType.ACK, SWPReceiver._ACKD)
+                packet_byte = packet.to_bytes()
+                self._llp_endpoint.send(packet_byte)
+                SWPReceiver.semaphore.release()
+                continue
+            loc = packet.seq_num % SWPReceiver._BUFF_SIZE
+            logging.debug("loc is: %d" % loc)
+            SWPReceiver.fill(loc, packet._data)
+            while(SWPReceiver.buff[SWPReceiver._BUFF_POINTER] is not None):
+                SWPReceiver._BUFF_POINTER = (SWPReceiver._BUFF_POINTER + 1) % SWPReceiver._BUFF_SIZE
+                self._ready_data.add(SWPReceiver.buff[SWPReceiver._BUFF_POINTER])
+                SWPReceiver.buff[SWPReceiver._BUFF_POINTER] = None
+                SWPReceiver._ACKD = SWPReceiver._ACKD + 1
+            packet = SWPPacket(SWPType.ACK, SWPReceiver._ACKD)
+            packet_byte = packet.to_bytes()
+            self._llp_endpoint.send(packet_byte)
+            logging.debug("ACKD is: %d" % SWPReceiver._ACKD)
+            SWPReceiver.semaphore.release()
 
+        return
+
+    def fill(self, loc, data):
+        if(len(data) <= SWPReceiver._BUFF_SIZE - loc):
+            SWPReceiver.buff[loc:loc + len(data)] = data[:]
+        else:
+            mid = SWPReceiver._BUFF_SIZE - loc
+            SWPReceiver.buff[loc:] = data[:mid]
+            SWPReceiver.buff[0:] = data[mid:]
         return
