@@ -85,12 +85,12 @@ class SWPSender:
         SWPSender.buff[seq_tail] = data
         packet = SWPPacket(SWPType.DATA, seq_num, data)
         packet_byte = packet.to_bytes()
-        self._llp_endpoint.send(packet_byte)
         logging.debug("seq_num is: %d" % seq_num)
         logging.debug("seq_tail is: %d" % seq_tail)
         self.timers[seq_tail]\
             = threading.Timer(SWPSender._TIMEOUT, self._retransmit, [seq_num])
         self.timers[seq_tail].start()
+        self._llp_endpoint.send(packet_byte)
         return
 
     def _retransmit(self, seq_num):
