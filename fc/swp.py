@@ -180,6 +180,7 @@ class SWPReceiver:
     def fill(self, loc, data):
         if(len(data) <= SWPReceiver._BUFF_SIZE - loc):
             SWPReceiver.buff[loc:loc + len(data)] = data[:]
+            print(SWPReceiver.buff)
         else:
             mid = SWPReceiver._BUFF_SIZE - loc
             SWPReceiver.buff[loc:] = data[:mid]
