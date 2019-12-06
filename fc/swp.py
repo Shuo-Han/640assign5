@@ -188,7 +188,6 @@ class SWPReceiver:
                 cur = cur.next
             SWPReceiver.buffer_head.next = cur
             print(SWPReceiver._ACKD)
-            print(cur.data)
             #self.fill(loc, packet._data)
             # while(SWPReceiver.buff[SWPReceiver._BUFF_POINTER] is not None):
             #     self._ready_data.put(str(SWPReceiver.buff[SWPReceiver._BUFF_POINTER]))
