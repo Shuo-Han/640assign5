@@ -85,7 +85,6 @@ class SWPSender:
         logging.debug("data is: %s" % data)
         if(l == 0):
             return
-        self.data = data
         SWPSender.semaphore.acquire()
         seq_num = SWPSender._LWS
         SWPSender._LWS = SWPSender._LWS + l
@@ -96,20 +95,19 @@ class SWPSender:
         logging.debug("seq_num is: %d" % seq_num)
         logging.debug("seq_tail is: %d" % seq_tail)
         self.timers[seq_tail]\
-            = threading.Timer(SWPSender._TIMEOUT, self._retransmit, [seq_num])
+            = threading.Timer(SWPSender._TIMEOUT, self._retransmit, [seq_num, seq_tail])
         self.timers[seq_tail].start()
         self._llp_endpoint.send(packet_byte)
         return
 
-    def _retransmit(self, seq_num):
+    def _retransmit(self, seq_num, seq_tail):
         # TODO
-        packet = SWPPacket(SWPType.DATA, seq_num, self.data)
+        packet = SWPPacket(SWPType.DATA, seq_num, SWPSender.buff[seq_tail])
         packet_byte = packet.to_bytes()
-        seq_tail = seq_num + len(self.data)
-        logging.debug("data being retry %s" % self.data)
+        logging.debug("data being retry %s" % SWPSender.buff[seq_tail])
         logging.debug("seq.tail %s" % seq_tail)
         self.timers[seq_tail]\
-            = threading.Timer(SWPSender._TIMEOUT, self._retransmit, [seq_num])
+            = threading.Timer(SWPSender._TIMEOUT, self._retransmit, [seq_num, seq_tail])
         self.timers[seq_tail].start()
         self._llp_endpoint.send(packet_byte)
         return
