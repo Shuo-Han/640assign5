@@ -178,14 +178,16 @@ class SWPReceiver:
             tail = head + len(packet._data)
             self.insert_chunk(ListNode(head, tail, packet._data))
             c = SWPReceiver.buffer_head.next
-            while(c is not None):
-                print(str(c.data) + "," +str(c.head)+","+str(c.tail))
-                c = c.next
+            # while(c is not None):
+            #     print(str(c.data) + "," +str(c.head)+","+str(c.tail))
+            #     c = c.next
             cur = SWPReceiver.buffer_head.next
             while(cur is not None and cur.head == SWPReceiver._ACKD):
                 self._ready_data.put(cur.data)
                 SWPReceiver._ACKD = cur.tail
             SWPReceiver.buffer_head.next = cur
+            print(SWPReceiver._ACKD)
+            print(cur.data)
             #self.fill(loc, packet._data)
             # while(SWPReceiver.buff[SWPReceiver._BUFF_POINTER] is not None):
             #     self._ready_data.put(str(SWPReceiver.buff[SWPReceiver._BUFF_POINTER]))
