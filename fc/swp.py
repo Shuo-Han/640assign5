@@ -81,14 +81,17 @@ class SWPSender:
         SWPSender.semaphore.acquire()
         seq_num = SWPSender._LWS
         SWPSender._LWS = SWPSender._LWS + l
+        seq_tail = seq_num + l
 
-        SWPSender.buff[seq_num] = data
+        SWPSender.buff[seq_tail] = data
         packet = SWPPacket(SWPType.DATA, seq_num, data)
         packet_byte = packet.to_bytes()
         self._llp_endpoint.send(packet_byte)
-        self.timers[seq_num]\
-            = threading.Timer(SWPSender._TIMEOUT, self._retransmit, [seq_num])
-        self.timers[seq_num].start()
+        logging.debug("seq_num: %d" % seq_num)
+        logging.debug("seq_tail: %d" % seq_tail)
+        self.timers[seq_tail]\
+            = threading.Timer(SWPSender._TIMEOUT, self._retransmit, [seq_tail])
+        self.timers[seq_tail].start()
         return
 
     def _retransmit(self, seq_num):
@@ -144,7 +147,6 @@ class SWPReceiver:
             raw = self._llp_endpoint.recv()
             packet = SWPPacket.from_bytes(raw)
             logging.debug("Received: %s" % packet)
-            logging.debug("!!!!!!!!!!!!!!!!!!!!!!!")
 
             # TODO
 
