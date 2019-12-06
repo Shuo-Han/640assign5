@@ -83,7 +83,6 @@ class SWPSender:
     def _send(self, data):
         # TODO
         l = len(data)
-        logging.debug("data is: %s" % data)
         if(l == 0):
             return
         SWPSender.semaphore.acquire()
@@ -93,8 +92,6 @@ class SWPSender:
         SWPSender.buff[seq_tail] = data
         packet = SWPPacket(SWPType.DATA, seq_num, data)
         packet_byte = packet.to_bytes()
-        logging.debug("seq_num is: %d" % seq_num)
-        logging.debug("seq_tail is: %d" % seq_tail)
         self.timers[seq_tail]\
             = threading.Timer(SWPSender._TIMEOUT, self._retransmit, [seq_num, seq_tail])
         self.timers[seq_tail].start()
@@ -107,8 +104,6 @@ class SWPSender:
             return
         packet = SWPPacket(SWPType.DATA, seq_num, SWPSender.buff[seq_tail])
         packet_byte = packet.to_bytes()
-        logging.debug("data being retry %s" % SWPSender.buff[seq_tail])
-        logging.debug("seq.tail %s" % seq_tail)
         self.timers[seq_tail]\
             = threading.Timer(SWPSender._TIMEOUT, self._retransmit, [seq_num, seq_tail])
         self.timers[seq_tail].start()
@@ -131,7 +126,7 @@ class SWPSender:
                 SWPSender._ACKD = packet._seq_num
             self.timers[packet._seq_num].cancel()
             for key in [key for key in SWPSender.buff.keys() if key <= SWPSender._ACKD]:
-                del SWPSender.buff[key] 
+                del SWPSender.buff[key]
                 SWPSender.semaphore.release()
         return
 
@@ -139,11 +134,6 @@ class SWPReceiver:
     _RECV_WINDOW_SIZE = 5
     _ACKD = 0
     buffer_head = ListNode(-1, -1, None)
-
-
-    _BUFF_SIZE = _RECV_WINDOW_SIZE * SWPPacket.MAX_DATA_SIZE
-    _BUFF_POINTER = 0
-    buff = [None for _ in range(_BUFF_SIZE)]
     semaphore = threading.Semaphore(_RECV_WINDOW_SIZE)
 
     def __init__(self, local_address, loss_probability=0):
@@ -178,40 +168,24 @@ class SWPReceiver:
                 self._llp_endpoint.send(packet_byte)
                 SWPReceiver.semaphore.release()
                 continue
-            #loc = packet.seq_num % SWPReceiver._BUFF_SIZE
-            #logging.debug("loc is: %d" % loc)
             head = packet._seq_num
             tail = head + len(packet._data)
             self.insert_chunk(ListNode(head, tail, packet._data))
             c = SWPReceiver.buffer_head.next
-            # while(c is not None):
-            #     print(str(c.data) + "," +str(c.head)+","+str(c.tail))
-            #     c = c.next
             cur = SWPReceiver.buffer_head.next
             while(cur is not None and cur.head == SWPReceiver._ACKD):
                 self._ready_data.put(cur.data)
                 SWPReceiver._ACKD = cur.tail
                 cur = cur.next
             SWPReceiver.buffer_head.next = cur
-            print(SWPReceiver._ACKD)
-            #self.fill(loc, packet._data)
-            # while(SWPReceiver.buff[SWPReceiver._BUFF_POINTER] is not None):
-            #     self._ready_data.put(str(SWPReceiver.buff[SWPReceiver._BUFF_POINTER]))
-            #     SWPReceiver.buff[SWPReceiver._BUFF_POINTER] = None
-            #     SWPReceiver._ACKD = SWPReceiver._ACKD + 1
-            #     SWPReceiver._BUFF_POINTER = \
-            #         (SWPReceiver._BUFF_POINTER + 1) % SWPReceiver._BUFF_SIZE
             packet = SWPPacket(SWPType.ACK, SWPReceiver._ACKD)
             packet_byte = packet.to_bytes()
             self._llp_endpoint.send(packet_byte)
-            logging.debug("ACKD is: %d" % SWPReceiver._ACKD)
             SWPReceiver.semaphore.release()
 
         return
 
     def insert_chunk(self, node):
-
-        # print(str(node.data) + "," +str(node.head)+","+str(node.tail))
         cur = SWPReceiver.buffer_head
         while(cur is not None):
             if(node.head  < cur.tail):
@@ -221,14 +195,4 @@ class SWPReceiver:
                 return
             else:
                 cur = cur.next
-        return
-
-    def fill(self, loc, data):
-        if(len(data) <= SWPReceiver._BUFF_SIZE - loc):
-            SWPReceiver.buff[loc:loc + len(data)] = data[:]
-            print(SWPReceiver.buff[:20])
-        else:
-            mid = SWPReceiver._BUFF_SIZE - loc
-            SWPReceiver.buff[loc:] = data[:mid]
-            SWPReceiver.buff[0:] = data[mid:]
         return
