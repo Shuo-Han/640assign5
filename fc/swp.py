@@ -48,6 +48,14 @@ class SWPPacket:
     def __str__(self):
         return "%s %d %s" % (self._type.name, self._seq_num, repr(self._data))
 
+class ListNode:
+    def __init__(self, head, tail, data):
+        self.head = head
+        self.tail = tail
+        self.data = data
+        self.next = None
+
+
 class SWPSender:
     _SEND_WINDOW_SIZE = 5
     _TIMEOUT = 1
@@ -124,6 +132,9 @@ class SWPSender:
 class SWPReceiver:
     _RECV_WINDOW_SIZE = 5
     _ACKD = 0
+    buffer_head = ListNode(-1, -1, None)
+
+
     _BUFF_SIZE = _RECV_WINDOW_SIZE * SWPPacket.MAX_DATA_SIZE
     _BUFF_POINTER = 0
     buff = [None for _ in range(_BUFF_SIZE)]
@@ -161,21 +172,43 @@ class SWPReceiver:
                 self._llp_endpoint.send(packet_byte)
                 SWPReceiver.semaphore.release()
                 continue
-            loc = packet.seq_num % SWPReceiver._BUFF_SIZE
-            logging.debug("loc is: %d" % loc)
-            self.fill(loc, packet._data)
-            while(SWPReceiver.buff[SWPReceiver._BUFF_POINTER] is not None):
-                self._ready_data.put(str(SWPReceiver.buff[SWPReceiver._BUFF_POINTER]))
-                SWPReceiver.buff[SWPReceiver._BUFF_POINTER] = None
-                SWPReceiver._ACKD = SWPReceiver._ACKD + 1
-                SWPReceiver._BUFF_POINTER = \
-                    (SWPReceiver._BUFF_POINTER + 1) % SWPReceiver._BUFF_SIZE
+            #loc = packet.seq_num % SWPReceiver._BUFF_SIZE
+            #logging.debug("loc is: %d" % loc)
+            head = packet._seq_num
+            tail = head + len(packet._data)
+            self.insert_chunk(ListNode(head, tail, packet._data))
+            pointer = SWPReceiver._ACKD
+            cur = SWPReceiver.buffer.next
+            while(cur is not None && cur.head == pointer):
+                self._ready_data.put(packet._data)
+                pointer = cur.tail
+            SWPReceiver._ACKD = pointer
+            #self.fill(loc, packet._data)
+            # while(SWPReceiver.buff[SWPReceiver._BUFF_POINTER] is not None):
+            #     self._ready_data.put(str(SWPReceiver.buff[SWPReceiver._BUFF_POINTER]))
+            #     SWPReceiver.buff[SWPReceiver._BUFF_POINTER] = None
+            #     SWPReceiver._ACKD = SWPReceiver._ACKD + 1
+            #     SWPReceiver._BUFF_POINTER = \
+            #         (SWPReceiver._BUFF_POINTER + 1) % SWPReceiver._BUFF_SIZE
             packet = SWPPacket(SWPType.ACK, SWPReceiver._ACKD)
             packet_byte = packet.to_bytes()
             self._llp_endpoint.send(packet_byte)
             logging.debug("ACKD is: %d" % SWPReceiver._ACKD)
             SWPReceiver.semaphore.release()
 
+        return
+
+    def insert_chunk(self, node):
+        cur = SWPReceiver.buffer_head
+        while(cur is not None)
+            if(node.head  < cur.tail \
+                || (cur.next is not None && cur.next.head < node.tail)):
+                return
+            elif(cur.next is None || cur.next.head >= node.tail):
+                cur.next = node
+                return
+            else:
+                cur = cur.next
         return
 
     def fill(self, loc, data):
