@@ -130,10 +130,9 @@ class SWPSender:
             if(packet._seq_num > SWPSender._ACKD):
                 SWPSender._ACKD = packet._seq_num
             self.timers[packet._seq_num].cancel()
-            for key in SWPSender.buff.keys():
-                if(key <= SWPSender._ACKD):
-                    del SWPSender.buff[packet._seq_num]
-                    SWPSender.semaphore.release()
+            for key in [key for key in SWPSender.buff.keys() if key <= SWPSender._ACKD]:
+                del SWPSender.buff[key] 
+                SWPSender.semaphore.release()
         return
 
 class SWPReceiver:
