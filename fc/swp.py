@@ -207,8 +207,7 @@ class SWPReceiver:
         # print(str(node.data) + "," +str(node.head)+","+str(node.tail))
         cur = SWPReceiver.buffer_head
         while(cur is not None):
-            if(node.head  < cur.tail \
-                or (cur.next is not None and cur.next.head < node.tail)):
+            if(node.head  < cur.tail):
                 return
             elif(cur.next is None or cur.next.head >= node.tail):
                 cur.next = node
