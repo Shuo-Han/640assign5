@@ -177,6 +177,9 @@ class SWPReceiver:
             head = packet._seq_num
             tail = head + len(packet._data)
             self.insert_chunk(ListNode(head, tail, packet._data))
+            while(cur is not None):
+                print(str(cur.data) + "," +str(cur.head)+","+str(cur.tail))
+                cur = cur.next
             pointer = SWPReceiver._ACKD
             cur = SWPReceiver.buffer_head.next
             while(cur is not None and cur.head == pointer):
@@ -200,10 +203,8 @@ class SWPReceiver:
 
     def insert_chunk(self, node):
         cur = SWPReceiver.buffer_head
-        while(cur is not None):
-            print(str(cur.data) + "," +str(cur.head)+","+str(cur.tail))
-            cur = cur.next
-        print(str(node.data) + "," +str(node.head)+","+str(node.tail))
+
+        # print(str(node.data) + "," +str(node.head)+","+str(node.tail))
         cur = SWPReceiver.buffer_head
         while(cur is not None):
             if(node.head  < cur.tail \
