@@ -203,6 +203,7 @@ class SWPReceiver:
         while(cur is not None):
             print(str(cur.data) + "," +str(cur.head)+","+str(cur.tail))
             cur = cur.next
+        print(str(node.data) + "," +str(node.head)+","+str(node.tail))
         cur = SWPReceiver.buffer_head
         while(cur is not None):
             if(node.head  < cur.tail \
