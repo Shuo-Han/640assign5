@@ -165,7 +165,7 @@ class SWPReceiver:
             logging.debug("loc is: %d" % loc)
             self.fill(loc, packet._data)
             while(SWPReceiver.buff[SWPReceiver._BUFF_POINTER] is not None):
-                self._ready_data.put(""+SWPReceiver.buff[SWPReceiver._BUFF_POINTER])
+                self._ready_data.put(str(SWPReceiver.buff[SWPReceiver._BUFF_POINTER]))
                 SWPReceiver.buff[SWPReceiver._BUFF_POINTER] = None
                 SWPReceiver._ACKD = SWPReceiver._ACKD + 1
                 SWPReceiver._BUFF_POINTER = \
