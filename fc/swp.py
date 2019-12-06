@@ -165,10 +165,11 @@ class SWPReceiver:
             logging.debug("loc is: %d" % loc)
             self.fill(loc, packet._data)
             while(SWPReceiver.buff[SWPReceiver._BUFF_POINTER] is not None):
-                SWPReceiver._BUFF_POINTER = (SWPReceiver._BUFF_POINTER + 1) % SWPReceiver._BUFF_SIZE
                 self._ready_data.put(SWPReceiver.buff[SWPReceiver._BUFF_POINTER])
                 SWPReceiver.buff[SWPReceiver._BUFF_POINTER] = None
                 SWPReceiver._ACKD = SWPReceiver._ACKD + 1
+                SWPReceiver._BUFF_POINTER = \
+                    (SWPReceiver._BUFF_POINTER + 1) % SWPReceiver._BUFF_SIZE
             packet = SWPPacket(SWPType.ACK, SWPReceiver._ACKD)
             packet_byte = packet.to_bytes()
             self._llp_endpoint.send(packet_byte)
@@ -180,7 +181,7 @@ class SWPReceiver:
     def fill(self, loc, data):
         if(len(data) <= SWPReceiver._BUFF_SIZE - loc):
             SWPReceiver.buff[loc:loc + len(data)] = data[:]
-            print(SWPReceiver.buff)
+            print(SWPReceiver.buff[:20])
         else:
             mid = SWPReceiver._BUFF_SIZE - loc
             SWPReceiver.buff[loc:] = data[:mid]
