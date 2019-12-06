@@ -22,7 +22,7 @@ def main():
     receiver = swp.SWPReceiver((settings.hostname, settings.port),
             settings.loss_probability)
     while True:
-        data = receiver.recv().decode()
+        data = receiver.recv()
         print('%s' % data)
 
 if __name__ == '__main__':
