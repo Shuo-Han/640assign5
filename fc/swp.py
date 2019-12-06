@@ -105,13 +105,12 @@ class SWPSender:
         # TODO
         packet = SWPPacket(SWPType.DATA, seq_num, self.data)
         packet_byte = packet.to_bytes()
-        self._llp_endpoint.send(packet_byte)
-        seq_tail = seq_num + len(self.data)
         logging.debug("data being retry %s" % self.data)
-        logging.debug("seq_tail %s" % seq_tail)
         self.timers[seq_tail]\
             = threading.Timer(SWPSender._TIMEOUT, self._retransmit, [seq_num])
         self.timers[seq_tail].start()
+        self._llp_endpoint.send(packet_byte)
+        seq_tail = seq_num + len(self.data)
         return
 
     def _recv(self):
