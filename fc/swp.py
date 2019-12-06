@@ -60,6 +60,7 @@ class SWPSender:
     _SEND_WINDOW_SIZE = 5
     _TIMEOUT = 1
     _LWS = 0
+    _ACKD = 0
     semaphore = threading.Semaphore(_SEND_WINDOW_SIZE)
     buff = dict()
     timers = dict()
@@ -102,6 +103,8 @@ class SWPSender:
 
     def _retransmit(self, seq_num, seq_tail):
         # TODO
+        if(seq_tail <= SWPSender._ACKD):
+            return
         packet = SWPPacket(SWPType.DATA, seq_num, SWPSender.buff[seq_tail])
         packet_byte = packet.to_bytes()
         logging.debug("data being retry %s" % SWPSender.buff[seq_tail])
@@ -124,8 +127,11 @@ class SWPSender:
             # TODO
             if(packet._type != SWPType.ACK):
                 continue;
+            if(packet._seq_num > SWPSender._ACKD):
+                SWPSender._ACKD = packet._seq_num
+                logging.debug("SWPSender._ACKD: %d" % SWPSender._ACKD)
+                del SWPSender.buff[packet._seq_num]
             self.timers[packet._seq_num].cancel()
-            del SWPSender.buff[packet._seq_num]
             SWPSender.semaphore.release()
         return
 
