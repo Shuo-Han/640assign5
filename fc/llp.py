@@ -3,7 +3,7 @@ import random
 import socket
 
 class LLPEndpoint:
-    def __init__(self, local_address=None, remote_address=None, 
+    def __init__(self, local_address=None, remote_address=None,
             loss_probability=0):
         self._local_address = local_address
         self._remote_address = remote_address
@@ -25,6 +25,7 @@ class LLPEndpoint:
     def recv(self, max_size=4096):
         dropped = True
         while dropped:
+            print(??????????????????????????)
             if self._remote_address is None:
                 try:
                     (raw_bytes, address) = self._socket.recvfrom(max_size)
@@ -45,7 +46,7 @@ class LLPEndpoint:
                 dropped = False
             else:
                 logging.debug('LLP dropped: %s' % raw_bytes)
-        
+
         logging.debug('LLP received: %s' % raw_bytes)
         return raw_bytes
 

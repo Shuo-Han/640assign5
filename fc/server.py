@@ -11,14 +11,15 @@ def main():
             type=int, required=True, help='Local port')
     arg_parser.add_argument('-h', '--hostname', dest='hostname', action='store',
             type=str, default='', help='Local hostname')
-    arg_parser.add_argument('-l', '--loss', dest='loss_probability', 
+    arg_parser.add_argument('-l', '--loss', dest='loss_probability',
             action='store', type=float, default=0.0, help='Loss probability')
     settings = arg_parser.parse_args()
 
-    logging.basicConfig(level=logging.DEBUG, 
+    logging.basicConfig(level=logging.DEBUG,
             format='%(levelname)s: %(message)s')
 
-    receiver = swp.SWPReceiver((settings.hostname, settings.port), 
+    print(!!!!!!!!!!!!!!!!!!!!!!!!!!)
+    receiver = swp.SWPReceiver((settings.hostname, settings.port),
             settings.loss_probability)
     while True:
         data = receiver.recv().decode()
