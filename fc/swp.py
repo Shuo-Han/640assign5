@@ -162,7 +162,7 @@ class SWPReceiver:
                 continue
             loc = packet.seq_num % SWPReceiver._BUFF_SIZE
             logging.debug("loc is: %d" % loc)
-            SWPReceiver.fill(loc, packet._data)
+            self.fill(loc, packet._data)
             while(SWPReceiver.buff[SWPReceiver._BUFF_POINTER] is not None):
                 SWPReceiver._BUFF_POINTER = (SWPReceiver._BUFF_POINTER + 1) % SWPReceiver._BUFF_SIZE
                 self._ready_data.add(SWPReceiver.buff[SWPReceiver._BUFF_POINTER])
