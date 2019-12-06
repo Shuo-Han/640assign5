@@ -75,6 +75,8 @@ class SWPSender:
     def _send(self, data):
         # TODO
         l = len(data)
+        if(l == 0):
+            return
         self.data = data
         SWPSender.semaphore.acquire()
         seq_num = SWPSender._LWS
@@ -84,7 +86,7 @@ class SWPSender:
         packet = SWPPacket(SWPType.DATA, seq_num, data)
         packet_byte = packet.to_bytes()
         self._llp_endpoint.send(packet_byte)
-        self.timers[seq_num] = threading.Timer(_TIMEOUT, _retransmit, [seq_num])
+        self.timers[seq_num] = threading.Timer(SWPSender._TIMEOUT, _retransmit, [seq_num])
         self.timers[seq_num].start()
         return
 
@@ -93,7 +95,7 @@ class SWPSender:
         packet = SWPPacket(SWPType.DATA, seq_num, self.data)
         packet_byte = packet.to_bytes()
         self._llp_endpoint.send(packet_byte)
-        self.timers[seq_num] = threading.Timer(_TIMEOUT, _retransmit, [seq_num])
+        self.timers[seq_num] = threading.Timer(SWPSender._TIMEOUT, _retransmit, [seq_num])
         self.timers[seq_num].start()
         return
 
