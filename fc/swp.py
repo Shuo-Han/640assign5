@@ -181,12 +181,11 @@ class SWPReceiver:
             while(c is not None):
                 print(str(c.data) + "," +str(c.head)+","+str(c.tail))
                 c = c.next
-            pointer = SWPReceiver._ACKD
             cur = SWPReceiver.buffer_head.next
-            while(cur is not None and cur.head == pointer):
-                self._ready_data.put(packet._data)
-                pointer = cur.tail
-            SWPReceiver._ACKD = pointer
+            while(cur is not None and cur.head == SWPReceiver._ACKD):
+                self._ready_data.put(cur.data)
+                SWPReceiver._ACKD = cur.tail
+            SWPReceiver.buffer_head.next = cur
             #self.fill(loc, packet._data)
             # while(SWPReceiver.buff[SWPReceiver._BUFF_POINTER] is not None):
             #     self._ready_data.put(str(SWPReceiver.buff[SWPReceiver._BUFF_POINTER]))
