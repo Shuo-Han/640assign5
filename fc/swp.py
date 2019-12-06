@@ -112,7 +112,7 @@ class SWPSender:
 
             # TODO
             if(packet._type != SWPType.ACK):
-                return
+                continue;
             self.timers[packet._seq_num].cancel()
             del SWPSender.buff[packet._seq_num]
             SWPSender.semaphore.release()
@@ -144,6 +144,7 @@ class SWPReceiver:
             raw = self._llp_endpoint.recv()
             packet = SWPPacket.from_bytes(raw)
             logging.debug("Received: %s" % packet)
+            logging.debug("!!!!!!!!!!!!!!!!!!!!!!!")
 
             # TODO
 
