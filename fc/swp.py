@@ -185,6 +185,7 @@ class SWPReceiver:
             while(cur is not None and cur.head == SWPReceiver._ACKD):
                 self._ready_data.put(cur.data)
                 SWPReceiver._ACKD = cur.tail
+                cur = cur.next
             SWPReceiver.buffer_head.next = cur
             print(SWPReceiver._ACKD)
             print(cur.data)
