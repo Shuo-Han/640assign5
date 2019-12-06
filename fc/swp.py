@@ -89,7 +89,7 @@ class SWPSender:
         logging.debug("seq_num is: %d" % seq_num)
         logging.debug("seq_tail is: %d" % seq_tail)
         self.timers[seq_tail]\
-            = threading.Timer(SWPSender._TIMEOUT, self._retransmit, [seq_tail])
+            = threading.Timer(SWPSender._TIMEOUT, self._retransmit, [seq_num])
         self.timers[seq_tail].start()
         return
 
@@ -98,9 +98,10 @@ class SWPSender:
         packet = SWPPacket(SWPType.DATA, seq_num, self.data)
         packet_byte = packet.to_bytes()
         self._llp_endpoint.send(packet_byte)
-        self.timers[seq_num]\
+        seq_tail = seq_num + len(self.data)
+        self.timers[seq_tail]\
             = threading.Timer(SWPSender._TIMEOUT, self._retransmit, [seq_num])
-        self.timers[seq_num].start()
+        self.timers[seq_tail].start()
         return
 
     def _recv(self):
@@ -165,7 +166,7 @@ class SWPReceiver:
             self.fill(loc, packet._data)
             while(SWPReceiver.buff[SWPReceiver._BUFF_POINTER] is not None):
                 SWPReceiver._BUFF_POINTER = (SWPReceiver._BUFF_POINTER + 1) % SWPReceiver._BUFF_SIZE
-                self._ready_data.add(SWPReceiver.buff[SWPReceiver._BUFF_POINTER])
+                self._ready_data.put(SWPReceiver.buff[SWPReceiver._BUFF_POINTER])
                 SWPReceiver.buff[SWPReceiver._BUFF_POINTER] = None
                 SWPReceiver._ACKD = SWPReceiver._ACKD + 1
             packet = SWPPacket(SWPType.ACK, SWPReceiver._ACKD)
