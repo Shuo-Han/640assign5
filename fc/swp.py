@@ -131,7 +131,7 @@ class SWPSender:
                 SWPSender._ACKD = packet._seq_num
             self.timers[packet._seq_num].cancel()
             for key in SWPSender.buff.keys():
-                if(key <= SWPSender._ACKD)
+                if(key <= SWPSender._ACKD):
                     del SWPSender.buff[packet._seq_num]
                     SWPSender.semaphore.release()
         return
