@@ -51,7 +51,6 @@ class SWPPacket:
 class SWPSender:
     _SEND_WINDOW_SIZE = 5
     _TIMEOUT = 1
-    _ACKD = 0
     _LWS = 0
     semaphore = threading.Semaphore(_SEND_WINDOW_SIZE)
     buff = dict()
@@ -75,6 +74,7 @@ class SWPSender:
     def _send(self, data):
         # TODO
         l = len(data)
+        logging.debug("data is: %s" % data)
         if(l == 0):
             return
         self.data = data
