@@ -178,7 +178,7 @@ class SWPReceiver:
             tail = head + len(packet._data)
             self.insert_chunk(ListNode(head, tail, packet._data))
             pointer = SWPReceiver._ACKD
-            cur = SWPReceiver.buffer.next
+            cur = SWPReceiver.buffer_head.next
             while(cur is not None and cur.head == pointer):
                 self._ready_data.put(packet._data)
                 pointer = cur.tail
